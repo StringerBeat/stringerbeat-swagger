@@ -1,0 +1,882 @@
+basePath: /api/v1
+definitions:
+  models.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  models.Genre:
+    properties:
+      name:
+        type: string
+    type: object
+  models.Item:
+    properties:
+      bpm:
+        type: string
+      description:
+        type: string
+      genre:
+        items:
+          type: string
+        type: array
+      is_visible:
+        type: boolean
+      item_image_url:
+        type: string
+      item_url:
+        type: string
+      price:
+        type: number
+      seller_id:
+        type: string
+      title:
+        type: string
+    type: object
+  models.ItemInput:
+    properties:
+      bpm:
+        type: string
+      description:
+        type: string
+      genre:
+        items:
+          type: string
+        type: array
+      price:
+        type: number
+      title:
+        type: string
+    required:
+    - genre
+    - price
+    - title
+    type: object
+  models.Recommendation:
+    properties:
+      recommended_id:
+        type: string
+      recommender_id:
+        type: string
+    required:
+    - recommended_id
+    - recommender_id
+    type: object
+  models.UpdatePasswordInput:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  models.User:
+    properties:
+      address:
+        type: string
+      birthdate:
+        type: string
+      email:
+        type: string
+      facebook_link:
+        description: social media links
+        type: string
+      firstname:
+        type: string
+      instagram_link:
+        type: string
+      lastname:
+        type: string
+      phone:
+        type: string
+      profile_image_url:
+        type: string
+      role:
+        description: RecommendedIDs    []uuid.UUID `json:"recommended_ids,omitempty"`
+        type: string
+      tiktok_link:
+        type: string
+      username:
+        type: string
+      verification_token:
+        type: string
+      verified:
+        type: boolean
+      x_link:
+        type: string
+      youtube_link:
+        type: string
+    required:
+    - address
+    - birthdate
+    - email
+    - firstname
+    - lastname
+    - phone
+    - role
+    - username
+    type: object
+  models.UserSignUpInput:
+    properties:
+      address:
+        type: string
+      birthdate:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      phone:
+        type: string
+      profile_image:
+        type: string
+      recommended_ids:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+      username:
+        type: string
+    required:
+    - address
+    - birthdate
+    - email
+    - firstname
+    - lastname
+    - password
+    - phone
+    - user_id
+    - username
+    type: object
+  models.UserSigninInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@stringerbeat.com
+    name: API Support
+    url: http://www.stringerbeat.com/support
+  description: A Backend service for StringerBea written with  Gin + Swagger
+  title: StringerBeat API
+  version: "1.0"
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Handle forgot password requests by sending a reset link to the
+        user's email
+      parameters:
+      - description: User Email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Forgot Password
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user with username and password, returning an access
+        token and refresh token
+      parameters:
+      - description: User Sign In Input
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSigninInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Sign In a user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Sign out a user by invalidating their session or token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Sign Out a user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, email, password, and optional
+        profile image
+      parameters:
+      - description: User Sign Up Input
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSignUpInput'
+      - description: Profile Image
+        in: formData
+        name: profile_image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Sign Up a new user
+      tags:
+      - Auth
+  /auth/reset-password/{token}:
+    post:
+      consumes:
+      - application/json
+      description: Reset a user's password using a reset token
+      parameters:
+      - description: Reset Token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: New Password
+        in: body
+        name: new_password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Reset Password
+      tags:
+      - Auth
+  /auth/verify:
+    get:
+      consumes:
+      - application/json
+      description: Check if a username or email is available for registration
+      parameters:
+      - description: Username to verify
+        in: query
+        name: username
+        type: string
+      - description: Email to verify
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Verify User Input
+      tags:
+      - Auth
+  /auth/verify/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Verify a user's email using a verification token
+      parameters:
+      - description: Verification Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Verify Email
+      tags:
+      - Auth
+  /genres:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all genres
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of genres
+          schema:
+            items:
+              $ref: '#/definitions/models.Genre'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all genres
+      tags:
+      - Genres
+    post:
+      consumes:
+      - application/json
+      description: Create a new genre with the provided name
+      parameters:
+      - description: Genre name
+        in: body
+        name: genre
+        required: true
+        schema:
+          $ref: '#/definitions/models.Genre'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created genre
+          schema:
+            $ref: '#/definitions/models.Genre'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new genre
+      tags:
+      - Genres
+  /items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of items
+          schema:
+            items:
+              $ref: '#/definitions/models.Item'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all items
+      tags:
+      - Tracks
+    post:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to add an item for sale
+      parameters:
+      - description: Item Input
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/models.ItemInput'
+      - description: Audio file
+        in: formData
+        name: audio_file
+        required: true
+        type: file
+      - description: Cover image
+        in: formData
+        name: cover_image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item created successfully
+          schema:
+            $ref: '#/definitions/models.ItemInput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Add an item for sale
+      tags:
+      - Tracks
+  /items/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Allows the items owner to delete it
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item deleted successfully
+          schema:
+            $ref: '#/definitions/models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete an item
+      tags:
+      - Tracks
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an item by its ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Item retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get an item by ID
+      tags:
+      - Tracks
+  /items/genre/{genre}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve items by genre
+      parameters:
+      - description: Genre Name
+        in: path
+        name: genre
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of items by genre
+          schema:
+            items:
+              $ref: '#/definitions/models.Item'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get items by genre /!\ will be deprecated in favor of filtering by
+        genre in the main items endpoint
+      tags:
+      - Tracks
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/models.User'
+              type: array
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - Users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a user by their unique ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - Users
+  /users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Change the password of the authenticated user
+      parameters:
+      - description: Update Password Input
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePasswordInput'
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Update user password
+      tags:
+      - Users
+  /users/{id}/recommendations:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of recommended users based on the user's preferences
+        or interactions
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/models.Recommendation'
+              type: array
+            type: object
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Get recommended users for a specific user
+      tags:
+      - Users
+  /users/profile-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a profile image for the authenticated user
+      parameters:
+      - description: Profile Image
+        in: formData
+        name: profile_image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      summary: Upload profile image
+      tags:
+      - Users
+swagger: "2.0"
